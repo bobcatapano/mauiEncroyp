@@ -12,3 +12,4 @@
 /MauiApp1/obj/Debug/net7.0-android/android/assets/armeabi-v7a
 *.dll
 /MauiApp1/obj/Debug/net7.0-android/android/assets/Java.Interop.dll
+/MauiApp1/bin/Release

@@ -7,6 +7,7 @@ using Microsoft.Maui.Storage;
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Alerts;
+using System.ComponentModel.Design;
 
 namespace MauiApp1;
 
@@ -17,11 +18,13 @@ public partial class MainPage : ContentPage
 
     RadioButton encrpyRadioButton;
     RadioButton decrpyRadioButton;
+    Label validation;
  
     string globalFileName;
 
     public MainPage()
     {
+        validation = new Label { Text = "" };
         entry1 = new Entry { Placeholder = "Enter password" };
         entry1.TextChanged += OnEntryTextChanged;
         entry1.Completed += OnEntryCompleted;
@@ -50,7 +53,6 @@ public partial class MainPage : ContentPage
         Grid.SetColumn(cryptButton, 2);
         buttonsGrid.Children.Add(cryptButton);
 
-
         encrpyRadioButton = new RadioButton() { Content = "Encrypt" };
         encrpyRadioButton.IsChecked = true;
         Grid.SetColumn(encrpyRadioButton, 0);
@@ -63,7 +65,7 @@ public partial class MainPage : ContentPage
         var stackLayout = new VerticalStackLayout
         {
             Padding = new Thickness(30, 60, 30, 30),
-            Children = { entry1, entry2, buttonsGrid, radioButtonsGrid }
+            Children = { entry1, entry2, validation, buttonsGrid, radioButtonsGrid }
         };
 
         this.Content = stackLayout;
@@ -71,22 +73,22 @@ public partial class MainPage : ContentPage
 
     private void OnEntryCompleted2(object sender, EventArgs e)
     {
-        throw new NotImplementedException();
+      //  throw new NotImplementedException();
     }
 
     private void OnEntryTextChanged2(object sender, TextChangedEventArgs e)
     {
-        throw new NotImplementedException();
+      //  throw new NotImplementedException();
     }
 
     private void OnEntryCompleted(object sender, EventArgs e)
     {
-        throw new NotImplementedException();
+       // throw new NotImplementedException();
     }
 
     private void OnEntryTextChanged(object sender, TextChangedEventArgs e)
     {
-        throw new NotImplementedException();
+     //   throw new NotImplementedException();
     }
 
     private async Task<FileResult> PickAndShow(PickOptions options)
@@ -132,6 +134,21 @@ public partial class MainPage : ContentPage
 
     async void OnCryptButtonClicked(object sender, EventArgs e)
     {
+        if (string.IsNullOrEmpty(entry1.Text) || string.IsNullOrEmpty(entry2.Text))
+        {
+            validation.Text = "Please enter a password";
+            return;
+        }
+        else if (entry1.Text != entry2.Text)
+        {
+            validation.Text = "Passwords do not match";
+            return;
+        }
+        else
+        {
+            validation.Text = "Password validated";
+        }
+        
         if (File.Exists(globalFileName))
         {
             File.Delete(globalFileName);
@@ -159,19 +176,19 @@ public partial class MainPage : ContentPage
                     return;
                 }
 
-                    byte[] fileBytes = File.ReadAllBytes(globalFileName);
+                byte[] fileBytes = File.ReadAllBytes(globalFileName);
                 
-
-                    string fullFilePath = Path.GetFullPath(globalFileName);
-                    string directoryPath = Path.GetDirectoryName(fullFilePath);
+                string fullFilePath = Path.GetFullPath(globalFileName);
+                string directoryPath = Path.GetDirectoryName(fullFilePath);
                  
-                    byte[] encryptedBytes = AnsibleEncryption.Encrypt_Bytes(fileBytes, entry1.Text);
-                    MemoryStream stream = new MemoryStream(encryptedBytes);
-                    var theresult = await SaveFile(new CancellationToken(), stream);
-                    if (theresult.IsSuccessful)
-                    {
-                        await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());
-                    }
+                byte[] encryptedBytes = AnsibleEncryption.Encrypt_Bytes(fileBytes, entry1.Text);
+
+                MemoryStream stream = new MemoryStream(encryptedBytes);
+
+                var theresult = await SaveFile(new CancellationToken(), stream);
+                
+                if (theresult.IsSuccessful)
+                   await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());           
             }
             catch (Exception ex)
             {
@@ -197,8 +214,19 @@ public partial class MainPage : ContentPage
 
             //     if (useBinaryCheckBox.IsChecked)
             //     {
-            //         byte[] encryptedFileBytes = File.ReadAllBytes(globalFileName);
-            //         byte[] decryptedBytes = AnsibleEncryption.Decrypt_Bytes(encryptedFileBytes, "test");
+                    byte[] encryptedFileBytes = File.ReadAllBytes(globalFileName);
+                    byte[] decryptedBytes = AnsibleEncryption.Decrypt_Bytes(encryptedFileBytes, entry1.Text);
+
+                    /// NEW CODE
+                    /// 
+                    MemoryStream stream = new MemoryStream(decryptedBytes);
+
+                    var theresult = await SaveFile(new CancellationToken(), stream);
+
+                    if (theresult.IsSuccessful)
+                        await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());
+
+            ////
 
             //         string newFilePath = new string(fullFilePath.SkipLast(4).ToArray());
             //         if (!File.Exists(newFilePath))

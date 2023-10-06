@@ -7,6 +7,9 @@ using Microsoft.Maui.Storage;
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Alerts;
+using System.ComponentModel.Design;
+
+
 
 namespace MauiApp1;
 
@@ -17,11 +20,14 @@ public partial class MainPage : ContentPage
 
     RadioButton encrpyRadioButton;
     RadioButton decrpyRadioButton;
- 
-    string globalFileName;
+    Label validation;
+
+    byte[] globalFileName;
+    string gloableFileExtension;
 
     public MainPage()
     {
+        validation = new Label { Text = "" };
         entry1 = new Entry { Placeholder = "Enter password" };
         entry1.TextChanged += OnEntryTextChanged;
         entry1.Completed += OnEntryCompleted;
@@ -50,7 +56,6 @@ public partial class MainPage : ContentPage
         Grid.SetColumn(cryptButton, 2);
         buttonsGrid.Children.Add(cryptButton);
 
-
         encrpyRadioButton = new RadioButton() { Content = "Encrypt" };
         encrpyRadioButton.IsChecked = true;
         Grid.SetColumn(encrpyRadioButton, 0);
@@ -63,7 +68,7 @@ public partial class MainPage : ContentPage
         var stackLayout = new VerticalStackLayout
         {
             Padding = new Thickness(30, 60, 30, 30),
-            Children = { entry1, entry2, buttonsGrid, radioButtonsGrid }
+            Children = { entry1, entry2, validation, buttonsGrid, radioButtonsGrid }
         };
 
         this.Content = stackLayout;
@@ -71,32 +76,32 @@ public partial class MainPage : ContentPage
 
     private void OnEntryCompleted2(object sender, EventArgs e)
     {
-        throw new NotImplementedException();
+      //  throw new NotImplementedException();
     }
 
     private void OnEntryTextChanged2(object sender, TextChangedEventArgs e)
     {
-        throw new NotImplementedException();
+      //  throw new NotImplementedException();
     }
 
     private void OnEntryCompleted(object sender, EventArgs e)
     {
-        throw new NotImplementedException();
+       // throw new NotImplementedException();
     }
 
     private void OnEntryTextChanged(object sender, TextChangedEventArgs e)
     {
-        throw new NotImplementedException();
+     //   throw new NotImplementedException();
     }
 
-    private async Task<FileResult> PickAndShow(PickOptions options)
+    private async Task<string> PickAndShow(PickOptions options)
     {
         try
         {
             var result = await FilePicker.Default.PickAsync(options);
             
             if (result != null)
-                return result;
+                return result.FullPath;
             
         }
         catch (Exception ex) {
@@ -123,19 +128,94 @@ public partial class MainPage : ContentPage
     }
     async void OnBrowseButtonClicked(object sender, EventArgs e)
     {
-        PickOptions theoptions = new() {
-        PickerTitle = "Please select a file"
+        //PickOptions theoptions = new() {
+        //PickerTitle = "Please select a file"
+        //};
+        //var fileResult = await PickAndShow(theoptions);
+        //globalFileName = fileResult;
+
+        var theoptions = new PickOptions
+        {
+            PickerTitle = "Please select a file"
         };
-        var fileResult = await PickAndShow(theoptions);
-        globalFileName = fileResult.FullPath;
+
+        globalFileName = await PickAndReadFile(theoptions);
+
+        if (globalFileName != null)
+        {
+           
+
+        //    // You now have the file content in the 'fileBytes' array
+        //    // Do whatever you need with the file content
+        //    string yp = "";
+        //    byte[] encryptedBytes = AnsibleEncryption.Encrypt_Bytes(fileBytes, entry1.Text);
+
+            //    MemoryStream stream = new MemoryStream(encryptedBytes);
+
+            //    var theresult = await SaveFile(new CancellationToken(), stream);
+
+            //    if (theresult.IsSuccessful)
+            //        await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());
+        }
+        else
+        {
+        //    // Handle the case where the file wasn't picked or an error occurred
+        //    string no = "";
+        }
+
+       // return fileBytes;
+    }
+
+    private async Task<byte[]> PickAndReadFile(PickOptions options)
+    {
+        try
+        {
+            var result = await FilePicker.Default.PickAsync(options);
+
+            if (result != null)
+            {
+                string theName = result.FileName;
+                gloableFileExtension = Path.GetExtension(theName);
+                // On Android, the FullPath might not be a direct file path
+                // Use the provided stream to read the file content instead
+                using (var fileStream = await result.OpenReadAsync())
+                {
+                    var memoryStream = new MemoryStream();
+                    await fileStream.CopyToAsync(memoryStream);
+                    return memoryStream.ToArray();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions here
+            string dooo = "";
+        }
+
+        return null;
     }
 
     async void OnCryptButtonClicked(object sender, EventArgs e)
     {
-        if (File.Exists(globalFileName))
+        if (string.IsNullOrEmpty(entry1.Text) || string.IsNullOrEmpty(entry2.Text))
         {
-            File.Delete(globalFileName);
+            validation.Text = "Please enter a password";
+            return;
         }
+        else if (entry1.Text != entry2.Text)
+        {
+            validation.Text = "Passwords do not match";
+            return;
+        }
+        else
+        {
+            validation.Text = "Password validated";
+        }
+        
+        //if (File.Exists(globalFileName))
+        //{
+        //    File.Delete(globalFileName);
+        //}
 
         encrpyRadioButton.IsChecked = true;
 
@@ -143,35 +223,50 @@ public partial class MainPage : ContentPage
         {
             try
             {
-                if (string.IsNullOrEmpty(globalFileName))
-                {
-                    //                        labelError.Text = "Selected file is empty.";
-                    //                        labelError.ForeColor = Color.Red;
+                //if (string.IsNullOrEmpty(globalFileName))
+                //{
+                //    //                        labelError.Text = "Selected file is empty.";
+                //    //                        labelError.ForeColor = Color.Red;
 
-                    return;
-                }
+                //    return;
+                //}
 
-                if (globalFileName.StartsWith("$ANSIBLE_VAULT;"))
-                {
-                    //                        labelError.Text = "Selected file is encrypted.";
-                    //                        labelError.ForeColor = Color.Red;
+                //if (globalFileName.StartsWith("$ANSIBLE_VAULT;"))
+                //{
+                //    //                        labelError.Text = "Selected file is encrypted.";
+                //    //                        labelError.ForeColor = Color.Red;
 
-                    return;
-                }
+                //    return;
+                //}
 
-                    byte[] fileBytes = File.ReadAllBytes(globalFileName);
-                
+                //  globalFileName = "/Android/data/com.companyname.mauiapp1/cache/2203693cc04e0be7f4f024d5f9499e13/88e76bf2b19a43bcbb4d1068dd5e9296/image.png";
+                //var here = FileSystem.Current.AppDataDirectory;
+                //string newt = "/data/user/0/com.companyname.mauiapp1/cache/2203693cc04e0be7f4f024d5f9499e13/f46da7fd10454bdd81980494eb1f718a/Screenshot_20230927_170318_One UI Home.jpg";
 
-                    string fullFilePath = Path.GetFullPath(globalFileName);
-                    string directoryPath = Path.GetDirectoryName(fullFilePath);
-                 
-                    byte[] encryptedBytes = AnsibleEncryption.Encrypt_Bytes(fileBytes, entry1.Text);
+                //   var testing = await FileSystem.Current.OpenAppPackageFileAsync(newt);
+
+                //     string fullFilePath = Path.GetFullPath(globalFileName);
+                //     string directoryPath = Path.GetDirectoryName(fullFilePath);
+
+                //      byte[] fileBytes = File.ReadAllBytes(globalFileName);
+                //var test = FileSystem.OpenAppPackageFileAsync(globalFileName);
+
+                if (gloableFileExtension != ".enm") {
+
+                    byte[] encryptedBytes = AnsibleEncryption.Encrypt_Bytes(globalFileName, entry1.Text);
+
                     MemoryStream stream = new MemoryStream(encryptedBytes);
+
                     var theresult = await SaveFile(new CancellationToken(), stream);
+
                     if (theresult.IsSuccessful)
-                    {
                         await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());
-                    }
+                }
+                else
+                {
+                    validation.Text = "Can not encrpt a enm type file";
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -197,8 +292,28 @@ public partial class MainPage : ContentPage
 
             //     if (useBinaryCheckBox.IsChecked)
             //     {
-            //         byte[] encryptedFileBytes = File.ReadAllBytes(globalFileName);
-            //         byte[] decryptedBytes = AnsibleEncryption.Decrypt_Bytes(encryptedFileBytes, "test");
+            // byte[] encryptedFileBytes = File.ReadAllBytes(globalFileName);
+
+            if (gloableFileExtension == ".enm")
+            {
+                byte[] decryptedBytes = AnsibleEncryption.Decrypt_Bytes(globalFileName, entry1.Text);
+
+                /// NEW CODE
+                /// 
+                MemoryStream stream = new MemoryStream(decryptedBytes);
+
+                var theresult = await SaveFile(new CancellationToken(), stream);
+
+                if (theresult.IsSuccessful)
+                    await Toast.Make($"File saved to {theresult.FilePath}").Show(new CancellationToken());
+            }
+            else
+            {
+                validation.Text = "Please select a enm type file";
+                return;
+            }
+
+            ////
 
             //         string newFilePath = new string(fullFilePath.SkipLast(4).ToArray());
             //         if (!File.Exists(newFilePath))

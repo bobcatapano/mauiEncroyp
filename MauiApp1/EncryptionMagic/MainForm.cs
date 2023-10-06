@@ -303,7 +303,7 @@
 //                {
 //                    labelError.Text = "Error decrypting file.";
 //                    labelError.ForeColor = Color.Red;
-//                }
+//            
 
 
 //            }
